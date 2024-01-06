@@ -31,7 +31,7 @@ pub struct Tilemap {
     /// # Description
     /// Value of the empty tile that will be used during the build process of the tile map in
     /// [`Tilemap::build()`] method.
-    empty_tile: char,
+    pub empty_tile: char,
     /// # Description
     /// Size of the tilemap. Depends on the positions of tile that are stored within.
     /// Always equals to the furthest coordinates of tiles on X and Y axes.
@@ -61,6 +61,15 @@ impl Tilemap {
             size: Vector2::new(0, 0),
             tiles: sorted_vec::SortedSet::new(),
         }
+    }
+
+    /// # Description
+    /// Returns size of the [`Tilemap`].
+    ///
+    /// # Return
+    /// [`Vector2`] that stores size of the [`Tilemap`].
+    pub fn size(&self) -> Vector2 {
+        return self.size;
     }
 
     /// # Description
@@ -164,5 +173,86 @@ impl Tilemap {
 
 #[cfg(test)]
 mod tests {
+    use crate::{Tilemap, Vector2};
 
+    const EMPTY_TILE_CHAR: char = '-';
+    const NUMBER_OF_TILES: usize = 5;
+    const TILE_VALUE: char = 'O';
+
+    fn build_test_tilemap(tilemap: &mut Tilemap) {
+        for i in 0..NUMBER_OF_TILES {
+            match tilemap.add_tile(Vector2::new(i, i), TILE_VALUE) {
+                Ok(_) => assert!(true),
+                Err(_) => assert!(false)
+            }
+        }
+
+        assert_eq!(tilemap.size(), Vector2::new(NUMBER_OF_TILES, NUMBER_OF_TILES));
+    }
+
+    #[test]
+    fn new() {
+        let tilemap = Tilemap::new(EMPTY_TILE_CHAR);
+        assert_eq!(tilemap.empty_tile, EMPTY_TILE_CHAR);
+    }
+
+    #[test]
+    fn size() {
+        let tilemap = Tilemap::new(EMPTY_TILE_CHAR);
+        assert_eq!(tilemap.size(), Vector2::ZERO);
+    }
+
+    #[test]
+    fn add_tile() {
+        let mut tilemap = Tilemap::new(EMPTY_TILE_CHAR);
+        match tilemap.add_tile(Vector2::ZERO, 'O') {
+            Ok(_) => assert!(true),
+            Err(_) => assert!(false)
+        }
+
+        assert_eq!(tilemap.size, Vector2::ONE);
+
+        match tilemap.add_tile(Vector2::ZERO, 'O') {
+            Ok(_) => assert!(false),
+            Err(_) => assert!(true)
+        }
+
+        assert_eq!(tilemap.size, Vector2::ONE);
+    }
+
+    #[test]
+    fn build_row() {
+        let mut result = String::new();
+
+        let mut tilemap = Tilemap::new(EMPTY_TILE_CHAR);
+        build_test_tilemap(&mut tilemap);
+
+        match tilemap.build_row(0, NUMBER_OF_TILES, &mut result) {
+            crate::tilemap::DrawLineState::NewLine => assert!(true),
+            crate::tilemap::DrawLineState::SameLine(_) => assert!(false)
+        }
+
+        let mut ideal_result = String::new();
+        ideal_result.push_str(String::from_utf8(vec![EMPTY_TILE_CHAR as u8; NUMBER_OF_TILES]).unwrap().as_str());
+
+        assert_eq!(result, ideal_result);
+    }
+
+    #[test]
+    fn build() {
+        let mut tilemap = Tilemap::new(EMPTY_TILE_CHAR);
+        build_test_tilemap(&mut tilemap);
+
+        let mut ideal_result = String::new();
+        for i in 0..NUMBER_OF_TILES {
+            ideal_result.push_str(String::from_utf8(vec![EMPTY_TILE_CHAR as u8; i]).unwrap().as_str());
+            ideal_result.push(TILE_VALUE);
+            ideal_result.push_str(String::from_utf8(vec![EMPTY_TILE_CHAR as u8; NUMBER_OF_TILES - i - 1]).unwrap().as_str());
+            if i < NUMBER_OF_TILES - 1 {
+                ideal_result.push('\n');
+            }
+        }
+
+        assert_eq!(tilemap.build(), ideal_result);
+    }
 }
