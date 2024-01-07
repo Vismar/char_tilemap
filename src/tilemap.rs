@@ -76,7 +76,7 @@ impl Tilemap {
     /// Adds a new [`Tile`] at the specified position and with specified value.
     ///
     /// # Arguments
-    /// * `position: Vector2` - Position of a new [`Tile`].
+    /// * `position: Vector2` - Position represented as [`Vector2`] of a new [`Tile`].
     /// * `value: char` - Value as [`char`] of a new [`Tile`].
     ///
     /// # Return
@@ -97,6 +97,24 @@ impl Tilemap {
         }
 
         return Err(format!("Failed to add new tile at {position} with value \'{value}\'"));
+    }
+
+    /// # Description
+    /// Removes tile at the specified position if it exists.
+    ///
+    /// # Arguments
+    /// * `position: Vector2` - Position represented as [`Vector2`] at which [`Tile`] should be removed.
+    ///
+    /// # Return
+    /// * [`Result::Ok`] if at the specified position [`Tile`] did exist and was removed.
+    /// * [`Result::Err`] if at the specified position [`Tile`] did not exist.
+    pub fn remove_tile(&mut self, position: Vector2) -> Result<(), String> {
+        if let Some(index) = self.tiles.iter().position(|tile| tile.position == position) {
+            self.tiles.remove_index(index);
+            return Ok(());
+        }
+
+        return Err(format!("There is no tile at the position {position}"));
     }
 
     /// # Description
@@ -218,6 +236,27 @@ mod tests {
         }
 
         assert_eq!(tilemap.size, Vector2::ONE);
+    }
+
+    #[test]
+    fn remove_tile() {
+        let mut tilemap = Tilemap::new(EMPTY_TILE_CHAR);
+        match tilemap.add_tile(Vector2::ZERO, 'O') {
+            Ok(_) => assert!(true),
+            Err(_) => assert!(false)
+        }
+
+        assert_eq!(tilemap.size, Vector2::ONE);
+
+        match tilemap.remove_tile(Vector2::ZERO) {
+            Ok(_) => assert!(true),
+            Err(_) => assert!(false)
+        }
+
+        match tilemap.remove_tile(Vector2::ZERO) {
+            Ok(_) => assert!(false),
+            Err(_) => assert!(true)
+        }
     }
 
     #[test]
