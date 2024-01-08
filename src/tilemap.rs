@@ -26,6 +26,33 @@ enum DrawLineState {
 /// # Description
 /// Object that describes and stores 2d tilemap. Provides to means to add/delete/modify tiles in it.
 /// Also provides method to create string representation of the tilemap.
+///
+/// # Example
+/// ```rust
+/// // Create new tilemap
+/// let mut tilemap = char_tilemap::Tilemap::new('-');
+///
+/// // Add new tile
+/// match tilemap.add_tile(char_tilemap::Vector2::ZERO, 'O') {
+///     Ok(_) => (),
+///     Err(msg) => println!("{msg}")
+/// }
+///
+/// // Update tile
+/// match tilemap.update_tile(char_tilemap::Vector2::ZERO, 'X') {
+///     Ok(_) => (),
+///     Err(msg) => println!("{msg}")
+/// }
+///
+/// // Build tilemap
+/// let tilemap_as_string = tilemap.build();
+///
+/// // Remove tile
+/// match tilemap.remove_tile(char_tilemap::Vector2::ZERO) {
+///     Ok(_) => (),
+///     Err(msg) => println!("{msg}")
+/// }
+/// ```
 #[derive(Debug)]
 pub struct Tilemap {
     /// # Description
@@ -55,6 +82,11 @@ impl Tilemap {
     ///
     /// # Return
     /// New instance of the [`Tilemap`].
+    ///
+    /// # Example
+    /// ```rust
+    /// let mut tilemap = char_tilemap::Tilemap::new('-');
+    /// ```
     pub fn new(empty_tile: char) -> Tilemap {
         return Tilemap {
             empty_tile,
@@ -68,6 +100,12 @@ impl Tilemap {
     ///
     /// # Return
     /// [`Vector2`] that stores size of the [`Tilemap`].
+    ///
+    /// # Example
+    /// ```rust
+    /// let mut tilemap = char_tilemap::Tilemap::new('-');
+    /// assert_eq!(tilemap.size(), char_tilemap::Vector2::ZERO);
+    /// ```
     pub fn size(&self) -> Vector2 {
         return self.size;
     }
@@ -81,36 +119,79 @@ impl Tilemap {
     ///
     /// # Return
     /// * [`Result::Ok`] will be returned in case of successful addition of a new [`Tile`].
-    /// * [`Result::Err`] will be returned if tile at the specified position already exists.
-    /// All [`String`] values that are returned with [`Result`] contains log message.
-    pub fn add_tile(&mut self, position: Vector2, value: char) -> Result<String, String> {
+    /// * [`Result::Err`] will be returned if tile at the specified position already exists. Contains error message.
+    ///
+    /// # Example
+    /// ```rust
+    /// let mut tilemap = char_tilemap::Tilemap::new('-');
+    /// match tilemap.add_tile(char_tilemap::Vector2::ZERO, 'O') {
+    ///     Ok(_) => (),
+    ///     Err(msg) => println!("{msg}")
+    /// }
+    /// ```
+    pub fn add_tile(&mut self, position: Vector2, value: char) -> Result<(), String> {
         let new_tile = Tile { position, value };
         if !self.tiles.contains(&new_tile)
         {
             self.tiles.push(new_tile);
             self.size.x = std::cmp::max(self.size.x, position.x + 1);
             self.size.y = std::cmp::max(self.size.y, position.y + 1);
-            return Ok(
-                format!("New tile was added at {position} with value \'{value}\'. \
-                         New tilemap size is {}",
-                        self.size));
+            return Ok(());
         }
 
         return Err(format!("Failed to add new tile at {position} with value \'{value}\'"));
     }
 
     /// # Description
-    /// Removes tile at the specified position if it exists.
+    /// Removes [`Tile`] at the specified position if it exists.
     ///
     /// # Arguments
     /// * `position: Vector2` - Position represented as [`Vector2`] at which [`Tile`] should be removed.
     ///
     /// # Return
     /// * [`Result::Ok`] if at the specified position [`Tile`] did exist and was removed.
-    /// * [`Result::Err`] if at the specified position [`Tile`] did not exist.
+    /// * [`Result::Err`] if at the specified position [`Tile`] did not exist. Contains error message.
+    ///
+    /// # Example
+    /// ```rust
+    /// let mut tilemap = char_tilemap::Tilemap::new('-');
+    /// match tilemap.remove_tile(char_tilemap::Vector2::ZERO) {
+    ///     Ok(_) => (),
+    ///     Err(msg) => println!("{msg}")
+    /// }
+    /// ```
     pub fn remove_tile(&mut self, position: Vector2) -> Result<(), String> {
         if let Some(index) = self.tiles.iter().position(|tile| tile.position == position) {
             self.tiles.remove_index(index);
+            return Ok(());
+        }
+
+        return Err(format!("There is no tile at the position {position}"));
+    }
+
+    /// # Description
+    /// Updates [`Tile`] at the specified position if it exists with new value.
+    ///
+    /// # Arguments
+    /// * `position: Vector2` - Position represented as [`Vector2`] at which [`Tile`] should be updated.
+    /// * `new_value: char` - New value that will be assigned to the [`Tile`] at the specified position.
+    ///
+    /// # Return
+    /// * [`Result::Ok`] if at the specified position [`Tile`] did exist and was updated.
+    /// * [`Result::Err`] if at the specified position [`Tile`] did not exist. Contains error message.
+    ///
+    /// # Example
+    /// ```rust
+    /// let mut tilemap = char_tilemap::Tilemap::new('-');
+    /// match tilemap.update_tile(char_tilemap::Vector2::ZERO, 'X') {
+    ///     Ok(_) => (),
+    ///     Err(msg) => println!("{msg}")
+    /// }
+    /// ```
+    pub fn update_tile(&mut self, position: Vector2, new_value: char) -> Result<(), String> {
+        if let Some(_) = self.tiles.iter().find(|tile| tile.position == position) {
+            self.tiles.replace(Tile { position, value: new_value });
+
             return Ok(());
         }
 
@@ -122,6 +203,12 @@ impl Tilemap {
     ///
     /// # Return
     /// A new [`String`] that contains representation of a [`Tilemap`].
+    ///
+    /// # Example
+    /// ```rust
+    /// let mut tilemap = char_tilemap::Tilemap::new('-');
+    /// let tilemap_as_string = tilemap.build();
+    /// ```
     pub fn build(&self) -> String {
         let mut result = String::new();
         let mut x = 0;
@@ -254,6 +341,27 @@ mod tests {
         }
 
         match tilemap.remove_tile(Vector2::ZERO) {
+            Ok(_) => assert!(false),
+            Err(_) => assert!(true)
+        }
+    }
+
+    #[test]
+    fn update_tile() {
+        let mut tilemap = Tilemap::new(EMPTY_TILE_CHAR);
+        match tilemap.add_tile(Vector2::ZERO, 'O') {
+            Ok(_) => assert!(true),
+            Err(_) => assert!(false)
+        }
+
+        assert_eq!(tilemap.size, Vector2::ONE);
+
+        match tilemap.update_tile(Vector2::ZERO, '>') {
+            Ok(_) => assert!(true),
+            Err(_) => assert!(false)
+        }
+
+        match tilemap.update_tile(Vector2::ONE, '>') {
             Ok(_) => assert!(false),
             Err(_) => assert!(true)
         }

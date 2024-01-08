@@ -1,6 +1,6 @@
 fn add_tile_to_tilemap(tilemap: &mut char_tilemap::Tilemap, position: char_tilemap::Vector2, value: char) {
     match tilemap.add_tile(position, value) {
-        Ok(msg) => println!("{msg}"),
+        Ok(_) => (),
         Err(msg) => println!("{msg}")
     }
 }
