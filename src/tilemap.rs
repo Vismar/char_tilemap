@@ -118,8 +118,8 @@ impl Tilemap {
     /// * `value: char` - Value as [`char`] of a new [`Tile`].
     ///
     /// # Return
-    /// * [`Result::Ok`] will be returned in case of successful addition of a new [`Tile`].
-    /// * [`Result::Err`] will be returned if tile at the specified position already exists. Contains error message.
+    /// * [`Ok`] will be returned in case of successful addition of a new [`Tile`].
+    /// * [`Err`] will be returned if tile at the specified position already exists. Contains error message.
     ///
     /// # Example
     /// ```rust
@@ -149,8 +149,8 @@ impl Tilemap {
     /// * `position: Vector2` - Position represented as [`Vector2`] at which [`Tile`] should be removed.
     ///
     /// # Return
-    /// * [`Result::Ok`] if at the specified position [`Tile`] did exist and was removed.
-    /// * [`Result::Err`] if at the specified position [`Tile`] did not exist. Contains error message.
+    /// * [`Ok`] if at the specified position [`Tile`] did exist and was removed.
+    /// * [`Err`] if at the specified position [`Tile`] did not exist. Contains error message.
     ///
     /// # Example
     /// ```rust
@@ -177,8 +177,8 @@ impl Tilemap {
     /// * `new_value: char` - New value that will be assigned to the [`Tile`] at the specified position.
     ///
     /// # Return
-    /// * [`Result::Ok`] if at the specified position [`Tile`] did exist and was updated.
-    /// * [`Result::Err`] if at the specified position [`Tile`] did not exist. Contains error message.
+    /// * [`Ok`] if at the specified position [`Tile`] did exist and was updated.
+    /// * [`Err`] if at the specified position [`Tile`] did not exist. Contains error message.
     ///
     /// # Example
     /// ```rust
